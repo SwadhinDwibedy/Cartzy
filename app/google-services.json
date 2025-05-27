@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1054981259957",
+    "project_id": "cartzy-9465c",
+    "storage_bucket": "cartzy-9465c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1054981259957:android:7703added16db6da9934fc",
+        "android_client_info": {
+          "package_name": "com.example.cartzy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJ3AhPXyLpaVJl-fJbgTjUmaysQcu0VYI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
