@@ -40,26 +40,6 @@ Coroutines for async operations
 
 OpenLibrary APIs for book data
 
-🌐 APIs Used
-
-Search: https://openlibrary.org/search.json?q=
-
-Work Details: https://openlibrary.org/works/{work_id}.json
-
-Ratings: https://openlibrary.org/works/{work_id}/ratings.json
-
-User Reading List: https://openlibrary.org/people/{username}/books/already-read.json
-
-Subjects: https://openlibrary.org/subjects/{subject}.json
-
-Author Details: https://openlibrary.org/authors/{author_id}.json
-
-Cover Images: https://covers.openlibrary.org/b/id/{cover_id}-M.jpg
-
-Recent Changes (Trending): https://openlibrary.org/recentchanges.json
-
-Subjects used: bestsellers, motivational, fiction, novels, self_help
-
 🗂 Project Structure (Simplified)
 
 com.example.cartzy
