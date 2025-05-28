@@ -1,5 +1,6 @@
 package com.example.cartzy.data
 
+import com.example.cartzy.common.Book
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -10,7 +11,6 @@ object RepositoryAllBooks {
     private val client = OkHttpClient()
 
     suspend fun fetchAllBooks(): List<Book> = withContext(Dispatchers.IO) {
-        // Using the subject 'fiction' as a broad category to get many books
         val url = "https://openlibrary.org/subjects/fiction.json?limit=50"
 
         val request = Request.Builder()
@@ -23,23 +23,35 @@ object RepositoryAllBooks {
         }
 
         val responseBody = response.body?.string() ?: throw Exception("Empty response")
-
         val jsonObject = JSONObject(responseBody)
         val worksArray = jsonObject.getJSONArray("works")
 
         List(worksArray.length()) { i ->
             val item = worksArray.getJSONObject(i)
             val title = item.optString("title", "No Title")
+
             val authorsArray = item.optJSONArray("authors")
             val author = if (authorsArray != null && authorsArray.length() > 0) {
                 authorsArray.getJSONObject(0).optString("name", "Unknown Author")
             } else {
                 "Unknown Author"
             }
-            val coverId = item.optInt("cover_id", 0)
-            val coverUrl = if (coverId != 0) "https://covers.openlibrary.org/b/id/$coverId-M.jpg" else null
 
-            Book(title = title, author = author, coverUrl = coverUrl)
+            val coverId = item.optInt("cover_id", 0)
+            val coverUrl = if (coverId != 0)
+                "https://covers.openlibrary.org/b/id/$coverId-M.jpg"
+            else null
+
+            val rating = (3..5).random() + listOf(0f, 0.5f).random()
+            val price = (199..799).random()
+
+            Book(
+                title = title,
+                author = author,
+                coverUrl = coverUrl,
+                rating = rating,
+                price = price
+            )
         }
     }
 }

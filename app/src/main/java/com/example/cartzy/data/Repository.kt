@@ -1,5 +1,6 @@
 package com.example.cartzy.data
 
+import com.example.cartzy.common.Book
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -29,8 +30,3 @@ object Repository {
     }
 }
 
-data class Book(
-    val title: String,
-    val author: String,
-    val coverUrl: String?
-)
