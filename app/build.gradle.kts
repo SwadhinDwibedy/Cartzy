@@ -5,8 +5,8 @@ plugins {
     id("com.google.dagger.hilt.android") // Hilt plugin
     id("kotlin-kapt") // Required for annotation processing
     id("com.google.gms.google-services") // Firebase Services
+    id ("kotlin-parcelize")
 }
-
 android {
     namespace = "com.example.cartzy"
     compileSdk = 35
@@ -43,6 +43,10 @@ android {
 }
 
 dependencies {
+
+    implementation ("androidx.compose.material3:material3:1.2.0")
+    implementation ("androidx.compose.material:material-icons-extended:1.5.4")
+
 
 // Networking
     implementation ("com.squareup.okhttp3:okhttp:4.12.0")

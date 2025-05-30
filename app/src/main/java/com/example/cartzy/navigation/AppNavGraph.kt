@@ -2,13 +2,16 @@ package com.example.cartzy.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.cartzy.u_i.auth.LoginScreen
 import com.example.cartzy.u_i.auth.SignupScreen
 import com.example.cartzy.theme.MainScreen
 import com.example.cartzy.u_i.home.AllBooksScreen
 import com.example.cartzy.u_i.home.BestSellingScreen
+import com.example.cartzy.u_i.home.BookDetailScreen
 import com.example.cartzy.u_i.home.EditorsChoiceScreen
 import com.example.cartzy.u_i.home.HomeScreen
 import com.example.cartzy.u_i.home.MotivationalScreen
@@ -57,6 +60,12 @@ fun AppNavGraph(navController: NavHostController) {
         composable("editors_choice") { EditorsChoiceScreen(navController) }
         composable("motivational") { MotivationalScreen(navController) }
         composable("all_books") { AllBooksScreen(navController) }
+
+        // Book Detail Screen with argument: bookId
+        composable("book_detail/{workId}") { backStackEntry ->
+            val workId = backStackEntry.arguments?.getString("workId") ?: ""
+            BookDetailScreen(workId = workId, navController = navController)
+        }
     }
 }
 
@@ -71,4 +80,7 @@ sealed class Screen(val route: String) {
      object Home : Screen("home")
      object Main : Screen("main")
     // object OTP : Screen("otp")
+    object BookDetail : Screen("book_detail/{workId}") {
+        fun createRoute(workId: String): String = "book_detail/$workId"
+    }
 }

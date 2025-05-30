@@ -27,15 +27,18 @@ fun BookListItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 5.dp, vertical = 0.dp)
-            .clickable { onClick?.invoke() },
+            .padding(horizontal = 10.dp, vertical = 6.dp)
+            .clickable {
+                onClick?.invoke()
+            }
+            ,
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        shape = MaterialTheme.shapes.large
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        shape = RoundedCornerShape(12.dp)
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(14.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.Top
         ) {
@@ -45,16 +48,14 @@ fun BookListItem(
                 contentDescription = book.title,
                 modifier = Modifier
                     .size(width = 95.dp, height = 140.dp)
-                    .clip(MaterialTheme.shapes.medium)
+                    .clip(RoundedCornerShape(8.dp))
             )
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(14.dp))
 
-            // Info Column
+            // Book Info
             Column(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .weight(1f),
+                modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
@@ -62,13 +63,13 @@ fun BookListItem(
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF1A1A1A) // Deep color for title
+                        color = Color(0xFF1B1B1B)
                     ),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
                     text = "by ${book.author}",
@@ -81,9 +82,9 @@ fun BookListItem(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
-                // Rating + Price
+                // Rating + Price Row
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -91,12 +92,11 @@ fun BookListItem(
                 ) {
                     RatingBar(rating = book.rating)
 
-                    // Enhanced price styling
                     Text(
                         text = "₹${book.price}",
                         modifier = Modifier
-                            .background(Color(0xFFF0EFFF), RoundedCornerShape(6.dp))
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                            .background(Color(0xFFEFE8FF), RoundedCornerShape(6.dp))
+                            .padding(horizontal = 10.dp, vertical = 5.dp),
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
@@ -108,7 +108,6 @@ fun BookListItem(
         }
     }
 }
-
 @Composable
 fun RatingBar(rating: Float, maxRating: Int = 5) {
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -116,7 +115,7 @@ fun RatingBar(rating: Float, maxRating: Int = 5) {
             Icon(
                 imageVector = Icons.Default.Star,
                 contentDescription = "Star",
-                tint = if (index < rating.toInt()) Color(0xFFFFC107) else Color(0xFFE0E0E0),
+                tint = if (index < rating.toInt()) Color(0xFFFFC107) else Color(0xFFDDDDDD),
                 modifier = Modifier.size(18.dp)
             )
         }

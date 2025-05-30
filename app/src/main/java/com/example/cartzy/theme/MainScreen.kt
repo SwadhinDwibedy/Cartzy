@@ -15,12 +15,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.*
+import androidx.navigation.navArgument
 
 import com.example.cartzy.R
 import com.example.cartzy.u_i.cart.CartScreen
 import com.example.cartzy.u_i.home.AllBooksScreen
 import com.example.cartzy.u_i.home.BestSellingScreen
+import com.example.cartzy.u_i.home.BookDetailScreen
 import com.example.cartzy.u_i.home.EditorsChoiceScreen
 import com.example.cartzy.u_i.home.HomeScreen
 import com.example.cartzy.u_i.home.MotivationalScreen
@@ -69,6 +72,16 @@ fun MainScreen(rootNavController: NavHostController) {
             composable("editors_choice") { EditorsChoiceScreen(navController) }
             composable("motivational") { MotivationalScreen(navController) }
             composable("all_books") { AllBooksScreen(navController) }
+
+            // 📘 Book Detail Screen with bookId argument
+            composable(
+                route = "book_detail/{workId}",
+                arguments = listOf(navArgument("workId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val workId = backStackEntry.arguments?.getString("workId") ?: ""
+                BookDetailScreen(workId = workId, navController = navController)
+            }
+
         }
 
         BottomNavigationBar(

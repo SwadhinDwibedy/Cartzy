@@ -1,5 +1,6 @@
 package com.example.cartzy.u_i.home
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,8 +16,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.cartzy.R
 import com.example.cartzy.common.Book
+import com.example.cartzy.common.BookDetail
 import com.example.cartzy.common.BookListItem
 import com.example.cartzy.data.Repository
+import com.example.cartzy.navigation.Screen
 
 @Composable
 fun BestSellingScreen(navController: NavController) {
@@ -99,7 +102,16 @@ fun BestSellingScreen(navController: NavController) {
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(filteredBooks) { book ->
-                        BookListItem(book = book)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    // Correct navigation with book.workId
+                                    navController.navigate(Screen.BookDetail.createRoute(book.workId))
+                                }
+                        ) {
+                            BookListItem(book = book)
+                        }
                     }
                 }
             }
