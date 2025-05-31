@@ -16,7 +16,7 @@ fun BottomNavGraph(navController: NavHostController) {
         composable(BottomNavItem.Home.route) { HomeScreen(navController) }
         composable(BottomNavItem.Categories.route) { CategoriesScreen() }
         composable(BottomNavItem.Cart.route) { CartScreen() }
-        composable(BottomNavItem.Profile.route) { ProfileScreen() }
+        composable(BottomNavItem.Profile.route) { ProfileScreen(navController) }
     }
 }
 

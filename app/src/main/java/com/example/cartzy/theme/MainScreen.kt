@@ -65,7 +65,7 @@ fun MainScreen(rootNavController: NavHostController) {
             composable(BottomNavItem.Home.route) { HomeScreen(navController) }
             composable(BottomNavItem.Categories.route) { CategoriesScreen() }
             composable(BottomNavItem.Cart.route) { CartScreen() }
-            composable(BottomNavItem.Profile.route) { ProfileScreen() }
+            composable(BottomNavItem.Profile.route) { ProfileScreen(navController) }
 
             // Banner destinations
             composable("best_selling") { BestSellingScreen(navController) }
