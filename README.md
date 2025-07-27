@@ -52,6 +52,3 @@ com.example.cartzy
 
 Swadhin DwibedyLinkedIn
 
-📄 License
-
-MIT License
