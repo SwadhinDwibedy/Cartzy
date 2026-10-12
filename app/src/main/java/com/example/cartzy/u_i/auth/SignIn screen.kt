@@ -60,6 +60,14 @@ fun AnimatedCartzyTitle() {
     )
 }
 
+private fun isStrongPassword(password: String): Boolean {
+    val hasMinLength = password.length >= 8
+    val hasLetter = password.any { it.isLetter() }
+    val hasDigit = password.any { it.isDigit() }
+    val hasSpecialChar = password.any { !it.isLetterOrDigit() }
+    return hasMinLength && hasLetter && hasDigit && hasSpecialChar
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignupScreen(navController: NavController) {
@@ -183,6 +191,12 @@ fun SignupScreen(navController: NavController) {
                 },
                 colors = textFieldColors
             )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Use 8+ chars with letters, numbers, and special chars",
+                color = labelTextColor,
+                fontSize = 12.sp
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -275,6 +289,9 @@ fun SignupScreen(navController: NavController) {
                         }
                         !validateEmail(email) -> {
                             Toast.makeText(context, "Invalid email address!", Toast.LENGTH_SHORT).show()
+                        }
+                        !isStrongPassword(password) -> {
+                            Toast.makeText(context, "Password must be 8+ chars with letters, numbers, and special chars", Toast.LENGTH_LONG).show()
                         }
                         password != confirmPassword -> {
                             Toast.makeText(context, "Passwords do not match!", Toast.LENGTH_SHORT).show()

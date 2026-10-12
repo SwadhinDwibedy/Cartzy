@@ -3,32 +3,73 @@ package com.example.cartzy.u_i.auth
 import android.app.Activity
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.*
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.cartzy.R
 import com.example.cartzy.navigation.Screen
 import com.example.cartzy.ui.theme.DarkTextColor
 import com.example.cartzy.ui.theme.PurpleLavender
-import com.example.cartzy.R
 import com.google.firebase.FirebaseException
-import com.google.firebase.auth.*
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.PhoneAuthCredential
+import com.google.firebase.auth.PhoneAuthOptions
+import com.google.firebase.auth.PhoneAuthProvider
 import java.util.concurrent.TimeUnit
+
+private enum class LoginMethod {
+    Password,
+    Otp,
+    Call
+}
+
+private fun isValidPhone(phone: String): Boolean {
+    return phone.length == 10 && phone.all { it.isDigit() }
+}
+
+private fun isStrongPassword(password: String): Boolean {
+    val hasMinLength = password.length >= 8
+    val hasLetter = password.any { it.isLetter() }
+    val hasDigit = password.any { it.isDigit() }
+    val hasSpecialChar = password.any { !it.isLetterOrDigit() }
+    return hasMinLength && hasLetter && hasDigit && hasSpecialChar
+}
 
 @Composable
 fun LoginScreen(navController: NavController) {
@@ -40,7 +81,7 @@ fun LoginScreen(navController: NavController) {
     var password by remember { mutableStateOf("") }
     var otp by remember { mutableStateOf("") }
     var isPhoneValid by remember { mutableStateOf(true) }
-    var loginMethod by remember { mutableStateOf("OTP") }
+    var loginMethod by remember { mutableStateOf(LoginMethod.Otp) }
     var passwordVisible by remember { mutableStateOf(false) }
     var otpVisible by remember { mutableStateOf(false) }
     var verificationId by remember { mutableStateOf<String?>(null) }
@@ -48,11 +89,9 @@ fun LoginScreen(navController: NavController) {
     val bgGradient = Brush.verticalGradient(
         listOf(Color(0xFFF3E5F5), Color(0xFFF8EAF6), Color(0xFFFDE7F3))
     )
-
     val gradientText = Brush.linearGradient(
         listOf(Color(0xFF8E24AA), Color(0xFF5E35B1), Color(0xFF7E57C2))
     )
-
     val labelTextColor = Color(0xFF6A1B9A)
 
     val textFieldColors = TextFieldDefaults.colors(
@@ -65,25 +104,20 @@ fun LoginScreen(navController: NavController) {
         unfocusedTextColor = DarkTextColor
     )
 
-    fun validatePhone(phone: String): Boolean {
-        return phone.length == 10 && phone.all { it.isDigit() }
-    }
-
     fun signInWithCredential(credential: PhoneAuthCredential) {
-        auth.signInWithCredential(credential)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
-                    }
-                } else {
-                    Toast.makeText(context, "Login Failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+        auth.signInWithCredential(credential).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(Screen.Login.route) { inclusive = true }
                 }
+            } else {
+                Toast.makeText(context, "Login Failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
             }
+        }
     }
 
-    fun sendOtpOrCall() {
+    fun sendOtp() {
         val activity = context as? Activity ?: return
         val options = PhoneAuthOptions.newBuilder(auth)
             .setPhoneNumber("+91$phoneNumber")
@@ -102,39 +136,44 @@ fun LoginScreen(navController: NavController) {
                     verificationId = verifId
                     Toast.makeText(context, "Verification code sent", Toast.LENGTH_SHORT).show()
                 }
-            }).build()
+            })
+            .build()
 
         PhoneAuthProvider.verifyPhoneNumber(options)
     }
 
     fun verifyOtpCode() {
-        val verifId = verificationId
         val code = otp.trim()
+        val verifId = verificationId
         if (verifId != null && code.isNotEmpty()) {
-            val credential = PhoneAuthProvider.getCredential(verifId, code)
-            signInWithCredential(credential)
+            signInWithCredential(PhoneAuthProvider.getCredential(verifId, code))
         } else {
             Toast.makeText(context, "Enter valid OTP", Toast.LENGTH_SHORT).show()
         }
     }
 
     fun loginWithPassword() {
-        if (!email.contains("@")) {
-            Toast.makeText(context, "Enter valid email", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
+        val trimmedEmail = email.trim()
+        when {
+            !android.util.Patterns.EMAIL_ADDRESS.matcher(trimmedEmail).matches() -> {
+                Toast.makeText(context, "Enter valid email", Toast.LENGTH_SHORT).show()
+            }
+            !isStrongPassword(password) -> {
+                Toast.makeText(context, "Password must be 8+ chars with letters, numbers, and special chars", Toast.LENGTH_LONG).show()
+            }
+            else -> {
+                auth.signInWithEmailAndPassword(trimmedEmail, password).addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
+                    } else {
+                        Toast.makeText(context, "Login Failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
                     }
-                } else {
-                    Toast.makeText(context, "Login Failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
                 }
             }
+        }
     }
 
     Box(
@@ -157,53 +196,82 @@ fun LoginScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            if (loginMethod == "Password") {
-                TextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = { Text("Email") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = textFieldColors
-                )
-            } else {
-                TextField(
-                    value = phoneNumber,
-                    onValueChange = {
-                        phoneNumber = it
-                        isPhoneValid = validatePhone(it)
-                    },
-                    label = { Text("Phone Number") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                    singleLine = true,
-                    isError = !isPhoneValid,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = textFieldColors
-                )
-                if (!isPhoneValid) {
-                    Text("Invalid phone number", color = Color.Red, fontSize = 12.sp)
+            when (loginMethod) {
+                LoginMethod.Password -> {
+                    TextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        label = { Text("Email") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = textFieldColors
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    TextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = { Text("Password") },
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = textFieldColors,
+                        trailingIcon = {
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(
+                                    painter = painterResource(id = if (passwordVisible) R.drawable.ic_visibility else R.drawable.ic_visibility_off),
+                                    contentDescription = null,
+                                    tint = PurpleLavender
+                                )
+                            }
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Use 8+ chars with letters, numbers, and special chars",
+                        fontSize = 12.sp,
+                        color = labelTextColor
+                    )
+                }
+
+                LoginMethod.Otp, LoginMethod.Call -> {
+                    TextField(
+                        value = phoneNumber,
+                        onValueChange = {
+                            phoneNumber = it
+                            isPhoneValid = isValidPhone(it)
+                        },
+                        label = { Text("Phone Number") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                        singleLine = true,
+                        isError = !isPhoneValid,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = textFieldColors
+                    )
+                    if (!isPhoneValid) {
+                        Text("Invalid phone number", color = Color.Red, fontSize = 12.sp)
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Login method selector
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(selected = loginMethod == "Password", onClick = { loginMethod = "Password" })
-                Text("Password", modifier = Modifier.clickable { loginMethod = "Password" })
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                RadioButton(selected = loginMethod == LoginMethod.Password, onClick = { loginMethod = LoginMethod.Password })
+                Text("Password", modifier = Modifier.clickable { loginMethod = LoginMethod.Password })
                 Spacer(modifier = Modifier.width(12.dp))
-                RadioButton(selected = loginMethod == "OTP", onClick = { loginMethod = "OTP" })
-                Text("OTP", modifier = Modifier.clickable { loginMethod = "OTP" })
+                RadioButton(selected = loginMethod == LoginMethod.Otp, onClick = { loginMethod = LoginMethod.Otp })
+                Text("OTP", modifier = Modifier.clickable { loginMethod = LoginMethod.Otp })
                 Spacer(modifier = Modifier.width(12.dp))
-                RadioButton(selected = loginMethod == "Call", onClick = { loginMethod = "Call" })
-                Text("Call", modifier = Modifier.clickable { loginMethod = "Call" })
+                RadioButton(selected = loginMethod == LoginMethod.Call, onClick = { loginMethod = LoginMethod.Call })
+                Text("Call", modifier = Modifier.clickable { loginMethod = LoginMethod.Call })
             }
+
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Dynamic fields based on method
             when (loginMethod) {
-                "OTP" -> {
+                LoginMethod.Otp -> {
                     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         TextField(
                             value = otp,
@@ -227,8 +295,7 @@ fun LoginScreen(navController: NavController) {
                         Spacer(modifier = Modifier.width(8.dp))
                         Button(
                             onClick = {
-                                if (isPhoneValid) sendOtpOrCall()
-                                else Toast.makeText(context, "Enter valid phone", Toast.LENGTH_SHORT).show()
+                                if (isPhoneValid) sendOtp() else Toast.makeText(context, "Enter valid phone", Toast.LENGTH_SHORT).show()
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = PurpleLavender)
                         ) {
@@ -237,11 +304,10 @@ fun LoginScreen(navController: NavController) {
                     }
                 }
 
-                "Call" -> {
+                LoginMethod.Call -> {
                     Button(
                         onClick = {
-                            if (isPhoneValid) sendOtpOrCall()
-                            else Toast.makeText(context, "Enter valid phone", Toast.LENGTH_SHORT).show()
+                            if (isPhoneValid) sendOtp() else Toast.makeText(context, "Enter valid phone", Toast.LENGTH_SHORT).show()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = PurpleLavender),
                         modifier = Modifier.fillMaxWidth()
@@ -250,28 +316,7 @@ fun LoginScreen(navController: NavController) {
                     }
                 }
 
-                "Password" -> {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    TextField(
-                        value = password,
-                        onValueChange = { password = it },
-                        label = { Text("Password") },
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = textFieldColors,
-                        trailingIcon = {
-                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                Icon(
-                                    painter = painterResource(id = if (passwordVisible) R.drawable.ic_visibility else R.drawable.ic_visibility_off),
-                                    contentDescription = null,
-                                    tint = PurpleLavender
-                                )
-                            }
-                        }
-                    )
-                }
+                LoginMethod.Password -> Unit
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -279,9 +324,9 @@ fun LoginScreen(navController: NavController) {
             Button(
                 onClick = {
                     when (loginMethod) {
-                        "Password" -> loginWithPassword()
-                        "OTP" -> verifyOtpCode()
-                        "Call" -> {} // Already triggered
+                        LoginMethod.Password -> loginWithPassword()
+                        LoginMethod.Otp -> verifyOtpCode()
+                        LoginMethod.Call -> Unit
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = PurpleLavender),
@@ -297,9 +342,7 @@ fun LoginScreen(navController: NavController) {
             Text(
                 text = "Don't have an account? Register",
                 color = labelTextColor,
-                modifier = Modifier.clickable {
-                    navController.navigate(Screen.Signup.route)
-                }
+                modifier = Modifier.clickable { navController.navigate(Screen.Signup.route) }
             )
         }
     }
